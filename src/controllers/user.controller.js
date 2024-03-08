@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -120,5 +121,21 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { loginUser, registerUser };
+//endpoint to get all user details like all posts,followers count,follow count
+const userDetails = asyncHandler(async (req, res) => {
+    const  Id  = req.user?._id;
+
+    const user = await User.findById(Id).populate("following.follows")
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "User profile details fetched successfully"
+        )
+    )
+})
+
+export { loginUser, registerUser, userDetails };
 

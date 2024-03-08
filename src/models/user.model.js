@@ -29,12 +29,30 @@ const userSchema = new Schema({
         type: String,
         required: [true,"password is required"],
     },
+    posts: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: "Posts"
+        }
+    ],
     avatar: {
         type: String
     },
     coverImage: {
         type:String
     },
+    followers: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"Follow"
+        }
+    ],
+    following: [
+        {
+            type: Schema.Types.ObjectId,
+            ref:"Follow"
+      }  
+    ],
     refreshToken: {
         type:String
     }

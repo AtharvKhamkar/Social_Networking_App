@@ -22,4 +22,25 @@ const followUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { followUser };
+const unFollowUser = asyncHandler(async (req, res) => {
+    //take userId of current user from req.user
+    //pass userId of user whom to follow by req.params
+    //find the object from database and delete
+    
+    const unFollow = await Follow.findOneAndDelete({
+        $and:[{user:req.params?.Id},{follower:req.user?._id}]
+    })
+    
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                unFollow,
+                "Unfollowed successfully"
+        )
+    )
+})
+
+export { followUser, unFollowUser };
+
