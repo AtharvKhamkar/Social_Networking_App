@@ -23,11 +23,13 @@ app.use(cookieParser())
 
 
 //routes import
+import followRouter from "./routes/follow.routes.js";
 import postRouter from "./routes/post.routes.js";
 import userRouter from "./routes/user.routes.js";
 
 //routes declaration
 app.use("/api/v1/users",userRouter)
-app.use("/api/v1/posts",postRouter)
+app.use("/api/v1/posts", postRouter)
+app.use("/api/v1/follow",followRouter)
 
 export { app };

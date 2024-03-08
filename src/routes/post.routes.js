@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { uploadPost } from "../controllers/post.controller.js";
+import { deletePost, updatePost, uploadPost } from "../controllers/post.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -10,6 +10,14 @@ router.route("/upload").post(upload.fields([
         name: "content",
         maxCount:10
     }
-]),verifyJWT,uploadPost)
+]), verifyJWT, uploadPost)
+router.route("/update/:Id").put(upload.fields([
+    {
+        name: "content",
+        maxCount:10
+    }
+]), verifyJWT, updatePost)
+
+router.route("/delete/:Id").delete(verifyJWT,deletePost)
 
 export default router;
