@@ -268,10 +268,17 @@ const allUserPost = asyncHandler(async (req, res) => {
     //$lookup from from user model
     //return aggregate result
     const { page = 1, limit = 2 } = req.query;
-    const postAggregate = await Post.aggregate([
+    const pipeline = []
+
+    pipeline.push(
         {
             $match: {
                 owner:new mongoose.Types.ObjectId(req.user?._id)
+            }
+        },
+        {
+            $sort: {
+                createdAt:-1
             }
         },
         {
@@ -297,7 +304,9 @@ const allUserPost = asyncHandler(async (req, res) => {
                 }
             }
         }
-    ])
+    )
+    
+    const postAggregate = Post.aggregate(pipeline)
 
     const options = {
         page: parseInt(page, 10),
