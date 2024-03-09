@@ -1,4 +1,5 @@
 import { Follow } from "../models/follow.model.js";
+import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
@@ -6,6 +7,13 @@ const followUser = asyncHandler(async (req, res) => {
     //take userId of current user from req.user
     //pass userId of user whom to follow by req.params
     //create new object and return as response
+    const checkFollowed = await Follow.find({
+        $and:[{user:req.params?.Id},{follower:req.user?._id}]
+    })
+
+    if (checkFollowed) {
+        throw new ApiError(400,"You have already followed")
+    }
 
     const addFollower = await Follow.create({
         user: req.params?.Id,            //The person(A) whom to follow

@@ -123,6 +123,35 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
+const logoutUser = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken:1
+            }
+        },
+        {
+            new:true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure:true
+    }
+
+    return res.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken",options)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "User logged Out"   
+        )
+    )
+})
 
 //endpoint to get all user details like all posts,followers count,follow count
 const userDetails = asyncHandler(async (req, res) => {
@@ -274,6 +303,11 @@ const userFeed = asyncHandler(async (req, res) => {
             }
         },
         {
+            $sort: {
+                createdAt:-1
+            }
+        },
+        {
             $lookup: {
                 from: "users",
                 localField: "owner",
@@ -318,5 +352,5 @@ const userFeed = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, getFollowDetails, getFollowingDetails, loginUser, registerUser, userDetails, userFeed };
+export { allUserPost, getFollowDetails, getFollowingDetails, loginUser, logoutUser, registerUser, userDetails, userFeed };
 
