@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { allUserPost, loginUser, registerUser, userDetails } from "../controllers/user.controller.js";
+import { allUserPost, getFollowDetails, getFollowingDetails, loginUser, registerUser, userDetails, userFeed } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
@@ -19,6 +19,9 @@ router.route("/register")
 
 router.route("/login").post(upload.none(), loginUser)
 router.route("/profile").get(upload.none(), verifyJWT, userDetails)
-router.route("/user-posts").get(upload.none(),verifyJWT,allUserPost)
+router.route("/user-posts").get(upload.none(), verifyJWT, allUserPost)
+router.route("/followers").get(verifyJWT, getFollowDetails)
+router.route("/following").get(verifyJWT, getFollowingDetails)
+router.route("/").get(verifyJWT,userFeed)
 
 export default router

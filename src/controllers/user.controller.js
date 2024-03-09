@@ -123,6 +123,7 @@ const loginUser = asyncHandler(async (req, res) => {
     )
 })
 
+
 //endpoint to get all user details like all posts,followers count,follow count
 const userDetails = asyncHandler(async (req, res) => {
     const  Id  = req.user?._id;
@@ -166,8 +167,8 @@ const allUserPost = asyncHandler(async (req, res) => {
     //get all post object that match post.owner = req.user._id
     //$lookup from from user model
     //return aggregate result
-
-    const allPosts = await Post.aggregate([
+    const { page = 1, limit = 2 } = req.query;
+    const postAggregate = await Post.aggregate([
         {
             $match: {
                 owner:new mongoose.Types.ObjectId(req.user?._id)
@@ -198,6 +199,13 @@ const allUserPost = asyncHandler(async (req, res) => {
         }
     ])
 
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit,10)
+    }
+
+    const allPosts = await Post.aggregatePaginate(postAggregate,options)
+
     return res.status(200)
         .json(
             new ApiResponse(
@@ -208,5 +216,107 @@ const allUserPost = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, loginUser, registerUser, userDetails };
+const getFollowDetails = asyncHandler(async (req, res) => {
+    const followers = await Follow.find({ user: req.user?._id })
+        .select("follower")
+        .populate("follower", { userName: 1 })
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    followers
+                },
+                "Successfully fetched follower list"
+        )
+    )
+})
+
+const getFollowingDetails = asyncHandler(async (req, res) => {
+
+    const followingList = await Follow.find({ follower: req.user?._id })
+        .select("user")
+        .populate("user", { userName: 1 })
+
+    
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                followingList,
+                "Successfully fetched following list"
+        )
+    )
+})
+
+//function to get all post of the users that are followed by current user(posts of the following users)
+const userFeed = asyncHandler(async (req, res) => {
+
+    //get all the following list of the user
+    //extract all users mongoDB id from the array
+    //then in pipeline only select post whose owner in following list
+
+
+    const { page=1, limit=2} = req.query;
+    const pipeline = [];
+    const following = await Follow.find({
+        follower:req.user?._id
+    })
+
+    const followingUsernames = following.map((item) => item.user)
+
+    pipeline.push(
+        {
+            $match: {
+                owner:{$in:followingUsernames}
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            userName:1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $addFields: {
+                owner: {
+                    $first:"$owner.userName"
+                }
+            }
+        }
+    )
+
+    
+    
+    const feedAggregate = Post.aggregate(pipeline)
+
+    const options = {
+        page: parseInt(page, 10),
+        limit:parseInt(limit,10)
+    }
+
+    const feed = await Post.aggregatePaginate(feedAggregate,options)
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                feed,
+                "Successfully fetched posts"
+        )
+    )
+})
+
+export { allUserPost, getFollowDetails, getFollowingDetails, loginUser, registerUser, userDetails, userFeed };
 
