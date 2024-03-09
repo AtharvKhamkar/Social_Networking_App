@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { Follow } from "../models/follow.model.js";
+import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
@@ -125,17 +127,86 @@ const loginUser = asyncHandler(async (req, res) => {
 const userDetails = asyncHandler(async (req, res) => {
     const  Id  = req.user?._id;
 
-    const user = await User.findById(Id).populate("following.follows")
+    // const user = await User.findById(Id)
+    // const followers = await Follow.find({
+    //     user:req.user?._id
+    // })
+    // const following = await Follow.find({
+    //     follower:req.user?._id
+    // })
+
+    let [user, followers, following] = await Promise.all([
+        User.findById(Id),
+        Follow.find({
+            user:req.user?._id
+        }),
+        Follow.find({
+            follower:req.user?._id
+        })
+    ])
+
+
 
     return res.status(200)
         .json(
             new ApiResponse(
                 200,
-                user,
+                {
+                    user,
+                    followers:followers.length,
+                    following: following.length,
+                    totalPosts:user.posts.length
+                },
                 "User profile details fetched successfully"
         )
     )
 })
 
-export { loginUser, registerUser, userDetails };
+const allUserPost = asyncHandler(async (req, res) => {
+    //get all post object that match post.owner = req.user._id
+    //$lookup from from user model
+    //return aggregate result
+
+    const allPosts = await Post.aggregate([
+        {
+            $match: {
+                owner:new mongoose.Types.ObjectId(req.user?._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            name:1
+                        }
+                    }
+                ]
+                
+            }
+        },
+        {
+            $addFields: {
+                owner: {
+                    $first:"$owner.name"
+                }
+            }
+        }
+    ])
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                allPosts,
+                "All user posts fetched"
+        )
+    )
+})
+
+export { allUserPost, loginUser, registerUser, userDetails };
 

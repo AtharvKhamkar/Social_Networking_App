@@ -41,18 +41,6 @@ const userSchema = new Schema({
     coverImage: {
         type:String
     },
-    followers: [
-        {
-            type: Schema.Types.ObjectId,
-            ref:"Follow"
-        }
-    ],
-    following: [
-        {
-            type: Schema.Types.ObjectId,
-            ref:"Follow"
-      }  
-    ],
     refreshToken: {
         type:String
     }

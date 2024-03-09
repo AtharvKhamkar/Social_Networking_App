@@ -1,4 +1,5 @@
 import { Post } from "../models/post.model.js";
+import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -19,6 +20,15 @@ const uploadPost = asyncHandler(async (req, res) => {
         description,
         owner:req.user?._id
     })
+
+    await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $push: {
+                posts:post._id
+            }
+        }
+    )
 
     const createdPost = await Post.findById(post._id)
 
@@ -78,6 +88,20 @@ const updatePost = asyncHandler(async (req, res) => {
 const deletePost = asyncHandler(async (req, res) => {
     //send postId through req.params
     //delete post as per Id send response
+    
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $pull: {
+                posts: req.params?.Id
+            }
+        },
+        {
+            new:true
+        }
+    )
+    
     const deletedPost = await Post.findByIdAndDelete(req.params?.Id)
 
     return res.status(200)
