@@ -7,7 +7,7 @@ const followUser = asyncHandler(async (req, res) => {
     //take userId of current user from req.user
     //pass userId of user whom to follow by req.params
     //create new object and return as response
-    const checkFollowed = await Follow.find({
+    const checkFollowed = await Follow.findOne({
         $and:[{user:req.params?.Id},{follower:req.user?._id}]
     })
 
@@ -35,7 +35,7 @@ const unFollowUser = asyncHandler(async (req, res) => {
     //pass userId of user whom to follow by req.params
     //find the object from database and delete
     
-    const unFollow = await Follow.findOneAndDelete({
+    await Follow.findOneAndDelete({
         $and:[{user:req.params?.Id},{follower:req.user?._id}]
     })
     
@@ -44,7 +44,7 @@ const unFollowUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                unFollow,
+                {},
                 "Unfollowed successfully"
         )
     )
