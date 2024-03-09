@@ -153,6 +153,77 @@ const logoutUser = asyncHandler(async (req, res) => {
     )
 })
 
+const updateProfile = asyncHandler(async (req, res) => {
+    const Id = req.user._id;
+    const avatarLocalPath = req.files?.avatar ? req.files?.avatar[0]?.path : ""
+    const coverImageLocalPath = req.files?.coverImage ? req.files?.coverImage[0]?.path : ""
+
+    if (avatarLocalPath) {
+        var avatar = await uploadOnCloudinary(avatarLocalPath)
+    }
+
+    if (coverImageLocalPath) {
+        var coverImage = await uploadOnCloudinary(coverImageLocalPath)
+    }
+
+    const modifiedProfile = await User.findByIdAndUpdate(
+        Id,
+        {
+            $set: {
+                name: req.body?.name,
+                userName: req.body?.userName,
+                email: req.body?.email,
+                bio: req.user?.bio,
+                avatar: avatar?.url,
+                coverImage:coverImage?.url
+
+            }
+        },
+        {
+            new:true
+        }
+    )
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                modifiedProfile,
+                "Profile updated successfully"
+        )
+    )
+
+})
+
+const deleteUserProfile = asyncHandler(async (req, res) => {
+    //get userid from req.user.id
+    //find userid in the database and delete
+    //find all the post whose owner is given userid and delete
+    //find all follow objects whose user or follwer is given userid
+
+    const Id = req.user?._id
+
+    const deletedUser = await User.findByIdAndDelete(Id)
+
+    await Promise.all([
+        Post.find({
+            owner:Id
+        }),
+        Follow.find({
+            $or:[{user:Id},{follower:Id}]
+        })
+    ])
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                { "deletedUser": deletedUser._id },
+                "User profile deleted successfully"
+        )
+    )
+})
+
 //endpoint to get all user details like all posts,followers count,follow count
 const userDetails = asyncHandler(async (req, res) => {
     const  Id  = req.user?._id;
@@ -352,5 +423,5 @@ const userFeed = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, getFollowDetails, getFollowingDetails, loginUser, logoutUser, registerUser, userDetails, userFeed };
+export { allUserPost, deleteUserProfile, getFollowDetails, getFollowingDetails, loginUser, logoutUser, registerUser, updateProfile, userDetails, userFeed };
 
