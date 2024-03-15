@@ -23,7 +23,7 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 
 app.use(cookieParser())
-
+app.set('trust proxy', 1)
 app.use(limiter)
 
 
