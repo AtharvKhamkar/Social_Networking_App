@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { redisClient } from "../config/redis.config.js";
 import { Follow } from "../models/follow.model.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
@@ -239,12 +240,19 @@ const userDetails = asyncHandler(async (req, res) => {
     let [user, followers, following] = await Promise.all([
         User.findById(Id),
         Follow.find({
-            user:req.user?._id
+            user:Id
         }),
         Follow.find({
-            follower:req.user?._id
+            follower:Id
         })
     ])
+
+    await redisClient.set(req.cacheKey,JSON.stringify({
+        user,
+        followers:followers.length,
+        following: following.length,
+        totalPosts:user.posts.length
+    }),'EX',60)
 
 
 
@@ -313,7 +321,9 @@ const allUserPost = asyncHandler(async (req, res) => {
         limit: parseInt(limit,10)
     }
 
-    const allPosts = await Post.aggregatePaginate(postAggregate,options)
+    const allPosts = await Post.aggregatePaginate(postAggregate, options)
+    
+    await redisClient.set(req.cacheKey,JSON.stringify(allPosts),'EX',60)
 
     return res.status(200)
         .json(
@@ -326,9 +336,13 @@ const allUserPost = asyncHandler(async (req, res) => {
 })
 
 const getFollowDetails = asyncHandler(async (req, res) => {
-    const followers = await Follow.find({ user: req.user?._id })
+    const Id = req.user?._id
+
+    const followers = await Follow.find({ user: Id })
         .select("follower")
         .populate("follower", { userName: 1 })
+    
+    await redisClient.set(req.cacheKey,JSON.stringify(followers),'EX',60)
 
     return res.status(200)
         .json(
@@ -343,12 +357,13 @@ const getFollowDetails = asyncHandler(async (req, res) => {
 })
 
 const getFollowingDetails = asyncHandler(async (req, res) => {
+    const Id = req.user?._id
 
-    const followingList = await Follow.find({ follower: req.user?._id })
+    const followingList = await Follow.find({ follower: Id })
         .select("user")
         .populate("user", { userName: 1 })
 
-    
+    await redisClient.set(req.cacheKey,JSON.stringify(followingList),'EX',60)
 
     return res.status(200)
         .json(
@@ -366,12 +381,12 @@ const userFeed = asyncHandler(async (req, res) => {
     //get all the following list of the user
     //extract all users mongoDB id from the array
     //then in pipeline only select post whose owner in following list
-
-
+    
+    const Id = req.user?._id
     const { page=1, limit=2} = req.query;
     const pipeline = [];
     const following = await Follow.find({
-        follower:req.user?._id
+        follower:Id
     })
 
     const followingUsernames = following.map((item) => item.user)
@@ -420,7 +435,9 @@ const userFeed = asyncHandler(async (req, res) => {
         limit:parseInt(limit,10)
     }
 
-    const feed = await Post.aggregatePaginate(feedAggregate,options)
+    const feed = await Post.aggregatePaginate(feedAggregate, options)
+    
+    await redisClient.set(req.cacheKey,JSON.stringify(feed),'EX',60)
 
     return res.status(200)
         .json(

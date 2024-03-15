@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { allUserPost, deleteUserProfile, getFollowDetails, getFollowingDetails, loginUser, logoutUser, registerUser, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { checkCache } from "../middlewares/cache.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
 
 const router = Router()
@@ -20,7 +21,7 @@ router.route("/register")
 router.route("/login").post(upload.none(), loginUser)
 router.route("/logout").post(upload.none(), verifyJWT, logoutUser)
 router.route("/delete-profile").delete(verifyJWT,deleteUserProfile)
-router.route("/profile").get(upload.none(), verifyJWT, userDetails)
+router.route("/profile").get(upload.none(), verifyJWT, checkCache,userDetails)
 router.route("/update-profile").put(
     upload.fields([
         {
@@ -33,9 +34,9 @@ router.route("/update-profile").put(
         }
     ]),verifyJWT,updateProfile
 )
-router.route("/user-posts").get(upload.none(), verifyJWT, allUserPost)
-router.route("/followers").get(verifyJWT, getFollowDetails)
-router.route("/following").get(verifyJWT, getFollowingDetails)
-router.route("/").get(verifyJWT,userFeed)
+router.route("/user-posts").get(upload.none(), verifyJWT, checkCache,allUserPost)
+router.route("/followers").get(verifyJWT,checkCache,getFollowDetails)
+router.route("/following").get(verifyJWT,checkCache,getFollowingDetails)
+router.route("/").get(verifyJWT,checkCache,userFeed)
 
 export default router
