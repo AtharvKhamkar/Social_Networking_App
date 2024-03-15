@@ -238,7 +238,7 @@ const userDetails = asyncHandler(async (req, res) => {
     // })
 
     let [user, followers, following] = await Promise.all([
-        User.findById(Id),
+        User.findById(Id).select("-password -refreshToken"),
         Follow.find({
             user:Id
         }),

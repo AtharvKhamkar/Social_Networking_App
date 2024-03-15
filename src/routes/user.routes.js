@@ -34,9 +34,9 @@ router.route("/update-profile").put(
         }
     ]),verifyJWT,updateProfile
 )
-router.route("/user-posts").get(upload.none(), verifyJWT, checkCache,allUserPost)
-router.route("/followers").get(verifyJWT,checkCache,getFollowDetails)
-router.route("/following").get(verifyJWT,checkCache,getFollowingDetails)
-router.route("/").get(verifyJWT,checkCache,userFeed)
+router.route("/user-posts").get(upload.none(), verifyJWT, checkCache("allUserPost"),allUserPost)
+router.route("/followers").get(verifyJWT,checkCache("getFollowDetails"),getFollowDetails)
+router.route("/following").get(verifyJWT,checkCache("getFollowingDerails"),getFollowingDetails)
+router.route("/").get(verifyJWT,checkCache("userFeed"),userFeed)
 
 export default router
