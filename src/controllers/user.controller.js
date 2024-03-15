@@ -97,7 +97,7 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401,"Please register first")
     }
 
-    const isPasswordValid = checkUser.isPasswordCorrect(password);
+    const isPasswordValid = await checkUser.isPasswordCorrect(password);
     if (!isPasswordValid) {
         throw new ApiError(401,"Invalid password")
     }
