@@ -1,3 +1,5 @@
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import { redisClient } from "../config/redis.config.js";
 import { Follow } from "../models/follow.model.js";
@@ -7,6 +9,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { sendEmail } from "./email.controller.js";
 
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -150,6 +153,113 @@ const logoutUser = asyncHandler(async (req, res) => {
                 200,
                 {},
                 "User logged Out"   
+        )
+    )
+})
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
+    console.log(incomingRefreshToken)
+
+    if (!incomingRefreshToken) {
+        throw new ApiError(401,"Invalid refresh token")
+    }
+
+    const decodedRefreshToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    
+    const user = await User.findById(decodedRefreshToken?._id)
+
+    if (!user) {
+        throw new ApiError(401,"Invalid user")
+    }
+
+    if (incomingRefreshToken !== user?.refreshToken) {
+        throw new ApiError(401,"Invalid user")
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user?._id)
+    
+    const options = {
+        httpOnly: true,
+        secure:true
+    }
+
+    return res.status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken,refreshToken
+                },
+                "New refreshToken generated successfully"
+        )
+    )
+})
+
+const forgotPassword = asyncHandler(async (req, res) => {
+    const { email } = req.body
+    const fetchedUser = await User.findOne({ email })
+    if (!fetchedUser) {
+        throw new ApiError(400,"Invalid user")
+    }
+
+    console.log(fetchedUser)
+
+    const token = await fetchedUser.generatePasswordResetToken();
+    await fetchedUser.save();
+
+    console.log(fetchedUser)
+
+    const info = `Hey please follow the given URL to reset your password.This link will only valid for next 10 min from now.<a href='https://social-networking-app.onrender.com/api/v1/users/reset-password/${token}'>Click here</>`;
+    const data = {
+        to: email,
+        subject: "Password reset",
+        text: "Hey user",
+        html:info
+    }
+    sendEmail(data);
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                token,
+                "Password reset email send successfully"
+        )
+    )
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+    //get newPassword throgh req.body and token through req.params
+    //hash token
+    //retrive user from database using hashed token and resetTokenExpiry
+    //if user found change password and make resetToken and expiry undefined
+
+    const { newPassword } = req.body
+    const { token } = req.params
+    
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+    const fetchedUser = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetTokenExpiry:{$gt:Date.now()}
+    })
+
+    if (!fetchedUser) {
+        throw new ApiError(400,"Token expired,please try again later")
+    }
+    fetchedUser.password = newPassword
+    fetchedUser.passwordResetToken = undefined
+    fetchedUser.passwordResetTokenExpiry = undefined
+    await fetchedUser.save()
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "password reset successfully"
         )
     )
 })
@@ -449,5 +559,5 @@ const userFeed = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, deleteUserProfile, getFollowDetails, getFollowingDetails, loginUser, logoutUser, registerUser, updateProfile, userDetails, userFeed };
+export { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, updateProfile, userDetails, userFeed };
 
