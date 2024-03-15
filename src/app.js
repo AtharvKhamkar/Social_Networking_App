@@ -24,8 +24,11 @@ app.use(express.static("public"))
 
 app.use(cookieParser())
 
+app.use(limiter)
+
 
 //routes import
+import { limiter } from "./config/ratelimiter.config.js";
 import followRouter from "./routes/follow.routes.js";
 import postRouter from "./routes/post.routes.js";
 import userRouter from "./routes/user.routes.js";
