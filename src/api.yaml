@@ -1,0 +1,482 @@
+openapi: 3.0.0
+info:
+  title: Social_Networking_App
+  description: >-
+    This is simple basic social media application. In this application user can
+    create own profile,post some images.User can also follow other users and
+    build his network
+  version: 1.0.0
+servers:
+  - url: http://{{server}}
+  - url: https://social-networking-app.onrender.com/api/v1
+  - url: http://localhost:9090/api/v1
+components:
+  securitySchemes:
+    noauthAuth:
+      type: http
+      scheme: noauth
+    bearerAuth:
+      type: http
+      scheme: bearer
+security:
+  - bearerAuth: []
+tags:
+  - name: User
+    description: >-
+      In the user section. User is provided with functionality like creating
+      profile,login in application,logout from application ,updating profile.
+      User can also check all his profile details like followers details,
+      following details, his own posts.
+  - name: Posts
+  - name: Follow
+paths:
+  /users/register:
+    post:
+      tags:
+        - User
+      summary: Register User
+      description: >-
+        for creating a profile name,userName,email,password,bio these fields
+        should be passed through form data in text format. Only avatar and
+        coverImage data should be passed in file format.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Jayesh Choudhary
+                userName:
+                  type: string
+                  example: jayeshchoudhary_31
+                email:
+                  type: string
+                  example: jayeshchoudhary2002@gmail.com
+                password:
+                  type: string
+                  example: jayesh123
+                bio:
+                  type: string
+                  example: Hey there  I am Engineering student
+                avatar:
+                  type: string
+                  format: binary
+                coverImage:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/login:
+    post:
+      tags:
+        - User
+      summary: Login User
+      description: >-
+        For login only email,userName and password is required and should be
+        passed in request body in text format. After login user will be loggedin
+        and user will be provided with accessToken in the cookie.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                userName:
+                  type: string
+                  example: atharvkhamkar_19
+                email:
+                  type: string
+                  example: khamkaratharv2002@gmail.com
+                password:
+                  type: string
+                  example: atharv12345
+      security:
+        - noauthAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/logout:
+    post:
+      tags:
+        - User
+      summary: Logout User
+      description: >-
+        Just need to pass accessToken in the request header. User will be logged
+        out
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties: {}
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/refresh-token:
+    post:
+      tags:
+        - User
+      summary: Refresh Token
+      description: Just need to pass refreshToken in the header to renew refresh token.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: >-
+                    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWViMjc1MDk1NDIyNWMxZGQzNGU5ZmYiLCJpYXQiOjE3MDk5ODEwMDUsImV4cCI6MTcxMDg0NTAwNX0.H-km8qmhqSbBOoP7Z8QppJsEuIcvnwRAsiY7kJenkUg
+      parameters:
+        - name: refreshToken
+          in: header
+          schema:
+            type: string
+          example: >-
+            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWViMjc1MDk1NDIyNWMxZGQzNGU5ZmYiLCJpYXQiOjE3MDk5ODEwMDUsImV4cCI6MTcxMDg0NTAwNX0.H-km8qmhqSbBOoP7Z8QppJsEuIcvnwRAsiY7kJenkUg
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/forgot-password:
+    patch:
+      tags:
+        - User
+      summary: Forgot password
+      description: >-
+        This endpoint provide functionality of password recovery.
+
+        User should pass the email id in the form data.Email Id should be same
+        while registration. As a response recovery email will be send to the
+        given email ID
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: khamkaratharv2002@gmail.com
+      parameters:
+        - name: refreshToken
+          in: header
+          schema:
+            type: string
+          example: >-
+            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWViMjc1MDk1NDIyNWMxZGQzNGU5ZmYiLCJpYXQiOjE3MDk5ODEwMDUsImV4cCI6MTcxMDg0NTAwNX0.H-km8qmhqSbBOoP7Z8QppJsEuIcvnwRAsiY7kJenkUg
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/reset-password/f3578102f6d2545afd8d358fda12e372df9abc963eec20b923d835c37748c7c1:
+    patch:
+      tags:
+        - User
+      summary: Reset password
+      description: >-
+        This endpoint provide  functionality of password recovery.User need to
+        pass password reset token as a parameter in the request.after that user
+        can reset his password.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  example: atharv12345
+      parameters:
+        - name: refreshToken
+          in: header
+          schema:
+            type: string
+          example: >-
+            eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWViMjc1MDk1NDIyNWMxZGQzNGU5ZmYiLCJpYXQiOjE3MDk5ODEwMDUsImV4cCI6MTcxMDg0NTAwNX0.H-km8qmhqSbBOoP7Z8QppJsEuIcvnwRAsiY7kJenkUg
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/delete-profile:
+    delete:
+      tags:
+        - User
+      summary: Delete User Profile
+      description: >-
+        Just need to pass the accessToken in request header.User account will be
+        deleted
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/update-profile:
+    put:
+      tags:
+        - User
+      summary: Update Profile
+      description: >-
+        User can update as much field as user want.just username,name,bio,email
+        should be passed with request body in text format and avatar,coverImage
+        can be passed in file format. As a response updated profile will be
+        send.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Amulya Gavare
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/profile:
+    get:
+      tags:
+        - User
+      summary: Profile Details
+      description: >-
+        Just need to pass accessToken through request header.As a response all
+        user details will be provided.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/followers:
+    get:
+      tags:
+        - User
+      summary: User Followers Details
+      description: >-
+        Just pass the accessToken in request header. All follower list of
+        current user will be send as a response.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/following:
+    get:
+      tags:
+        - User
+      summary: User Following Details
+      description: >-
+        Just pass the accessToken in request header. All following list of
+        current user will be send as a response.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/user-posts:
+    get:
+      tags:
+        - User
+      summary: User Posts
+      description: >-
+        Pass the accessToken in request parameter. In response all the user post
+        will be send with pagination having limit of 2 posts.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /users/:
+    get:
+      tags:
+        - User
+      summary: User Feed
+      description: >-
+        Just send accessToken in request header. In response all the posts of
+        followed user will be send.At each request only 2 posts will be send.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+          example: '1'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+          example: '2'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /posts/upload:
+    post:
+      tags:
+        - Posts
+      summary: Upload Post
+      description: >-
+        User can post image on app. Image should be in file format and
+        description should be in text format.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: Keep calm and let your psychology degree do the talking.
+                content:
+                  type: string
+                  format: binary
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /posts/update/{Id}:
+    put:
+      tags:
+        - Posts
+      summary: Update Post
+      description: >-
+        User can update uploaded post.Only post objectId should be provided in
+        request parameter.as a response updated post will be send.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: Engineering Innovations That Are Changing the whole world
+                content:
+                  type: string
+                  format: binary
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 65f42f1ac15b1478e7a45ea0
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /posts/delete/{Id}:
+    delete:
+      tags:
+        - Posts
+      summary: Delete Post
+      description: >-
+        User can delete post.Just need to pass ObjectId of the post as a
+        paramter in request.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 65ec76f6b4418ce79a6a3742
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /follow/add-follower/{Id}:
+    post:
+      tags:
+        - Follow
+      summary: Add Follower
+      description: >-
+        User can follow other user. ObjectId of the other user should be passed
+        in request paramter and user accessToken in request header.
+      requestBody:
+        content: {}
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 65f3e43a2f644544b363be96
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
+  /follow/unfollow/{Id}:
+    delete:
+      tags:
+        - Follow
+      summary: Unfollow User
+      description: >-
+        User can unfollow other user. ObjectId of the other user should be
+        passed in request paramter and user accessToken in request header.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: Id
+          in: path
+          schema:
+            type: string
+          required: true
+          example: 65eb51127a321e86e09dfb93
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json: {}
