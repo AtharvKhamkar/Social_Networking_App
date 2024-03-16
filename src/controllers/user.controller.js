@@ -293,7 +293,7 @@ const updateProfile = asyncHandler(async (req, res) => {
         {
             new:true
         }
-    )
+    ).select("-refreshToken -password")
 
     return res.status(200)
         .json(

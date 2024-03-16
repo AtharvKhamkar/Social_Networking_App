@@ -7,7 +7,6 @@ info:
     build his network
   version: 1.0.0
 servers:
-  - url: http://{{server}}
   - url: https://social-networking-app.onrender.com/api/v1
   - url: http://localhost:9090/api/v1
 components:
@@ -47,19 +46,19 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Jayesh Choudhary
+                  example: Advait Karande
                 userName:
                   type: string
-                  example: jayeshchoudhary_31
+                  example: advaitkarande_32
                 email:
                   type: string
-                  example: jayeshchoudhary2002@gmail.com
+                  example: advaitkarande2002@gmail.com
                 password:
                   type: string
-                  example: jayesh123
+                  example: advait123
                 bio:
                   type: string
-                  example: Hey there  I am Engineering student
+                  example: Hey there  I am science student
                 avatar:
                   type: string
                   format: binary
@@ -183,7 +182,7 @@ paths:
           description: Successful response
           content:
             application/json: {}
-  /users/reset-password/f3578102f6d2545afd8d358fda12e372df9abc963eec20b923d835c37748c7c1:
+  /users/reset-password/{token}:
     patch:
       tags:
         - User
@@ -208,6 +207,12 @@ paths:
             type: string
           example: >-
             eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWViMjc1MDk1NDIyNWMxZGQzNGU5ZmYiLCJpYXQiOjE3MDk5ODEwMDUsImV4cCI6MTcxMDg0NTAwNX0.H-km8qmhqSbBOoP7Z8QppJsEuIcvnwRAsiY7kJenkUg
+        - name: token
+          in: path
+          schema:
+            type: string
+          required: true
+          example: f3578102f6d2545afd8d358fda12e372df9abc963eec20b923d835c37748c7c1
       responses:
         '200':
           description: Successful response
@@ -246,7 +251,7 @@ paths:
               properties:
                 name:
                   type: string
-                  example: Amulya Gavare
+                  example: Atharv  Khamkar
       security:
         - bearerAuth: []
       responses:
@@ -345,7 +350,7 @@ paths:
           in: query
           schema:
             type: integer
-          example: '2'
+          example: '5'
       responses:
         '200':
           description: Successful response
@@ -367,7 +372,7 @@ paths:
               properties:
                 description:
                   type: string
-                  example: Keep calm and let your psychology degree do the talking.
+                  example: Your favorite art museums
                 content:
                   type: string
                   format: binary
@@ -394,7 +399,7 @@ paths:
               properties:
                 description:
                   type: string
-                  example: Engineering Innovations That Are Changing the whole world
+                  example: Your favorite art museums in the world
                 content:
                   type: string
                   format: binary
@@ -406,7 +411,7 @@ paths:
           schema:
             type: string
           required: true
-          example: 65f42f1ac15b1478e7a45ea0
+          example: 65f5abaf8482e077bf57310f
       responses:
         '200':
           description: Successful response
@@ -428,7 +433,7 @@ paths:
           schema:
             type: string
           required: true
-          example: 65ec76f6b4418ce79a6a3742
+          example: 65f5abaf8482e077bf57310f
       responses:
         '200':
           description: Successful response
@@ -452,7 +457,7 @@ paths:
           schema:
             type: string
           required: true
-          example: 65f3e43a2f644544b363be96
+          example: 65f5a96f8482e077bf5730e6
       responses:
         '200':
           description: Successful response
@@ -474,7 +479,7 @@ paths:
           schema:
             type: string
           required: true
-          example: 65eb51127a321e86e09dfb93
+          example: 65f5a96f8482e077bf5730e6
       responses:
         '200':
           description: Successful response
