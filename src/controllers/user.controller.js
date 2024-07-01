@@ -559,5 +559,19 @@ const userFeed = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, updateProfile, userDetails, userFeed };
+const suggestFriends = asyncHandler(async (req, res) => {
+    
+    const users = await User.find({}).select("_id name userName avatar")
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                users,
+                "All suggested user fetched successfully"
+        )
+    )
+})
+
+export { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed };
 

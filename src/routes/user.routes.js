@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
+import { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { checkCache } from "../middlewares/cache.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -40,6 +40,7 @@ router.route("/update-profile").put(
 router.route("/user-posts").get(upload.none(), verifyJWT, checkCache("allUserPost"),allUserPost)
 router.route("/followers").get(verifyJWT,checkCache("getFollowDetails"),getFollowDetails)
 router.route("/following").get(verifyJWT,checkCache("getFollowingDerails"),getFollowingDetails)
-router.route("/").get(verifyJWT,checkCache("userFeed"),userFeed)
+router.route("/").get(verifyJWT, checkCache("userFeed"), userFeed)
+router.route("/suggest-friends").get(verifyJWT,suggestFriends)
 
 export default router
