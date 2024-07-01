@@ -30,6 +30,9 @@ const userSchema = new Schema({
         type: String,
         required: [true,"password is required"],
     },
+    bio: {
+        type:String,
+    },
     posts: [
         {
             type: Schema.Types.ObjectId,
