@@ -145,6 +145,7 @@ const logoutUser = asyncHandler(async (req, res) => {
         secure:true
     }
 
+
     return res.status(200)
         .clearCookie("accessToken", options)
         .clearCookie("refreshToken",options)
@@ -381,6 +382,55 @@ const userDetails = asyncHandler(async (req, res) => {
     )
 })
 
+const anyUserProfileDetails = asyncHandler(async (req, res) => {
+    const { userName } = req.params;
+    
+    // const user = await User.findById(Id)
+    // const followers = await Follow.find({
+    //     user:req.user?._id
+    // })
+    // const following = await Follow.find({
+    //     follower:req.user?._id
+    // })
+
+    const user = await User.findOne({
+        userName:userName
+    }).select("-password -refreshToken");
+
+    if (!user) {
+        return res.status(404).json(
+            new ApiResponse(
+                404,
+                null,
+                "User not found"
+            )
+        );
+    }
+
+    let [followers, following] = await Promise.all([
+        Follow.find({
+            user:user._id
+        }),
+        Follow.find({
+            follower:user._id
+        })
+    ])
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    user,
+                    followers:followers.length,
+                    following: following.length,
+                    totalPosts:user.posts.length
+                },
+                "User profile details fetched successfully"
+        )
+    )
+})
+
 const allUserPost = asyncHandler(async (req, res) => {
     //get all post object that match post.owner = req.user._id
     //$lookup from from user model
@@ -561,7 +611,7 @@ const userFeed = asyncHandler(async (req, res) => {
 
 const suggestFriends = asyncHandler(async (req, res) => {
     
-    const users = await User.find({}).select("_id name userName avatar")
+    const users = await User.find({}).select("-refreshToken -password")
 
     return res.status(200)
         .json(
@@ -573,5 +623,5 @@ const suggestFriends = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed };
+export { allUserPost, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed };
 

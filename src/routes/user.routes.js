@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { allUserPost, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
+import { allUserPost, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { checkCache } from "../middlewares/cache.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -24,7 +24,8 @@ router.route("/refresh-token").post(upload.none(), refreshAccessToken)
 router.route("/forgot-password").patch(upload.none(),forgotPassword)
 router.route("/reset-password/:token").patch(upload.none(),resetPassword)
 router.route("/delete-profile").delete(verifyJWT,deleteUserProfile)
-router.route("/profile").get(upload.none(), verifyJWT, checkCache("userDetails"),userDetails)
+router.route("/profile").get(upload.none(), verifyJWT, checkCache("userDetails"), userDetails)
+router.route("/suggest-friends").get(verifyJWT,suggestFriends)
 router.route("/update-profile").put(
     upload.fields([
         {
@@ -41,6 +42,7 @@ router.route("/user-posts").get(upload.none(), verifyJWT, checkCache("allUserPos
 router.route("/followers").get(verifyJWT,checkCache("getFollowDetails"),getFollowDetails)
 router.route("/following").get(verifyJWT,checkCache("getFollowingDerails"),getFollowingDetails)
 router.route("/").get(verifyJWT, checkCache("userFeed"), userFeed)
-router.route("/suggest-friends").get(verifyJWT,suggestFriends)
+router.route("/:userName").get(verifyJWT,anyUserProfileDetails)
+
 
 export default router
