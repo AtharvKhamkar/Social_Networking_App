@@ -654,6 +654,67 @@ const userFeed = asyncHandler(async (req, res) => {
                     $first:"$owner.userName"
                 }
             }
+        },
+        {
+            $lookup: {
+                from: "likes",
+                let: { postId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr:{$eq:["$post","$$postId"]}
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            count:{$sum:1}
+                        }
+                    }
+                ],
+                as:"like_count"
+            }
+        },
+        {
+            $addFields: {
+                like_count: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$like_count" }, 0] },
+                        then: { $arrayElemAt: ["$like_count.count", 0] },
+                        else:0
+                    }
+                }
+            }
+        },
+        {
+            $lookup: {
+                from: "likes",
+                let: { postId: "$_id", userId: req.user._id },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$post", "$$postId"] },
+                                    { $eq: ["$likedBy","$$userId"] }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as:"like_status"
+            }
+        },
+        {
+            $addFields: {
+                like_status: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$like_status" }, 0] },
+                        then: true,
+                        else:false
+                    }
+                }
+            }
         }
     )
 
