@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { allUserPost, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
+import { allUserPost, anyUserPostDetails, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed } from "../controllers/user.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { checkCache } from "../middlewares/cache.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -38,7 +38,8 @@ router.route("/update-profile").put(
         }
     ]),verifyJWT,updateProfile
 )
-router.route("/user-posts").get(upload.none(), verifyJWT, checkCache("allUserPost"),allUserPost)
+router.route("/user-posts").get(upload.none(), verifyJWT, checkCache("allUserPost"), allUserPost)
+router.route("/user-posts/:_id").get(verifyJWT,anyUserPostDetails)
 router.route("/followers").get(verifyJWT,checkCache("getFollowDetails"),getFollowDetails)
 router.route("/following").get(verifyJWT,checkCache("getFollowingDerails"),getFollowingDetails)
 router.route("/").get(verifyJWT, checkCache("userFeed"), userFeed)

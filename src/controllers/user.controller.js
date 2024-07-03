@@ -384,6 +384,7 @@ const userDetails = asyncHandler(async (req, res) => {
 
 const anyUserProfileDetails = asyncHandler(async (req, res) => {
     const { userName } = req.params;
+    const { _id } = req.user;                 //current user ID
     
     // const user = await User.findById(Id)
     // const followers = await Follow.find({
@@ -407,7 +408,11 @@ const anyUserProfileDetails = asyncHandler(async (req, res) => {
         );
     }
 
-    let [followers, following] = await Promise.all([
+    let [followingStatus, followers, following] = await Promise.all([
+        Follow.findOne({
+            user: user._id,
+            follower: _id
+        }).then(follow => !!follow), 
         Follow.find({
             user:user._id
         }),
@@ -422,6 +427,7 @@ const anyUserProfileDetails = asyncHandler(async (req, res) => {
                 200,
                 {
                     user,
+                    followingStatus,
                     followers:followers.length,
                     following: following.length,
                     totalPosts:user.posts.length
@@ -484,6 +490,71 @@ const allUserPost = asyncHandler(async (req, res) => {
     const allPosts = await Post.aggregatePaginate(postAggregate, options)
     
     await redisClient.set(req.cacheKey,JSON.stringify(allPosts),'EX',60)
+
+    return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                allPosts,
+                "All user posts fetched"
+        )
+    )
+})
+
+const anyUserPostDetails = asyncHandler(async (req, res) => {
+    //get all post object that match post.owner = req.user._id
+    //$lookup from from user model
+    //return aggregate result
+    const { page = 1, limit = 2 } = req.query;
+    const { _id } = req.params;
+    const pipeline = [];
+
+    pipeline.push(
+        {
+            $match: {
+                owner:new mongoose.Types.ObjectId(_id)
+            }
+        },
+        {
+            $sort: {
+                createdAt:-1
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            name:1
+                        }
+                    }
+                ]
+                
+            }
+        },
+        {
+            $addFields: {
+                owner: {
+                    $first:"$owner.name"
+                }
+            }
+        }
+    )
+
+    
+    
+    const postAggregate = Post.aggregate(pipeline)
+
+    const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit,10)
+    }
+
+    const allPosts = await Post.aggregatePaginate(postAggregate, options)
 
     return res.status(200)
         .json(
@@ -623,5 +694,5 @@ const suggestFriends = asyncHandler(async (req, res) => {
     )
 })
 
-export { allUserPost, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed };
+export { allUserPost, anyUserPostDetails, anyUserProfileDetails, deleteUserProfile, forgotPassword, getFollowDetails, getFollowingDetails, loginUser, logoutUser, refreshAccessToken, registerUser, resetPassword, suggestFriends, updateProfile, userDetails, userFeed };
 

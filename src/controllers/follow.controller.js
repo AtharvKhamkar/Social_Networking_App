@@ -50,5 +50,49 @@ const unFollowUser = asyncHandler(async (req, res) => {
     )
 })
 
-export { followUser, unFollowUser };
+const toggleFollowUser = asyncHandler(async (req, res) => {
+    const { Id: userIdToFollow } = req.params;
+    const currentUserId = req.user?._id;
+
+    //check if the current user already followed or not
+
+    const checkFollowed = await Follow.findOne({
+        user: userIdToFollow,
+        follower:currentUserId
+    })
+
+    if (checkFollowed) {
+        //If already followed then delete the document
+        await Follow.findOneAndDelete({
+            user: userIdToFollow,
+            follower:currentUserId
+        })
+
+        return res.status(200)
+        .json(
+            new ApiResponse(
+                200,
+                {},
+                "Unfollowed successfully"
+            )
+        )
+    } else {
+        const newFollower = await Follow.create({
+            user: userIdToFollow,
+            follower: currentUserId
+        });
+
+        return res.status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    newFollower,
+                    "Followed successfully"
+            )
+        )
+    }
+})
+
+
+export { followUser, toggleFollowUser, unFollowUser };
 
