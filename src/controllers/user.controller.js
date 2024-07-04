@@ -715,6 +715,37 @@ const userFeed = asyncHandler(async (req, res) => {
                     }
                 }
             }
+        },
+        {
+            $lookup: {
+                from: "comments",
+                let: { commentId: "$_id" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr:{$eq:["$post","$$commentId"]}
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            count:{$sum:1}
+                        }
+                    }
+                ],
+                as:"comment_count"
+            }
+        },
+        {
+            $addFields: {
+                comment_count: {
+                    $cond: {
+                        if: { $gt: [{ $size: "$comment_count" }, 0] },
+                        then: { $arrayElemAt: ["$comment_count.count", 0] },
+                        else:0
+                    }
+                }
+            }
         }
     )
 

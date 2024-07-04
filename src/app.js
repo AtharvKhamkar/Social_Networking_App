@@ -39,15 +39,17 @@ app.use(limiter)
 
 //routes import
 import { limiter } from "./config/ratelimiter.config.js";
+import commentRouter from "./routes/comment.routes.js";
 import followRouter from "./routes/follow.routes.js";
+import likeRouter from "./routes/like.routes.js";
 import postRouter from "./routes/post.routes.js";
 import userRouter from "./routes/user.routes.js";
-import likeRouter from "./routes/like.routes.js";
 
 //routes declaration
 app.use("/api/v1/users",userRouter)
 app.use("/api/v1/posts", postRouter)
 app.use("/api/v1/follow", followRouter)
-app.use("/api/v1/like",likeRouter)
+app.use("/api/v1/like", likeRouter)
+app.use("/api/v1/comment",commentRouter)
 
 export { app };
