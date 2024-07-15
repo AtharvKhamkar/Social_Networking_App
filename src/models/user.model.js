@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import mongoose, { Schema } from "mongoose";
+import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
 
 
 const userSchema = new Schema({
@@ -111,5 +112,5 @@ userSchema.methods.generatePasswordResetToken = async function () {
 
 
 
-
+userSchema.plugin(mongooseAggregatePaginate)
 export const User = mongoose.model("User",userSchema)

@@ -642,7 +642,8 @@ const userFeed = asyncHandler(async (req, res) => {
                 pipeline: [
                     {
                         $project: {
-                            userName:1
+                            userName: 1,
+                            avatar:1
                         }
                     }
                 ]
@@ -652,6 +653,10 @@ const userFeed = asyncHandler(async (req, res) => {
             $addFields: {
                 owner: {
                     $first:"$owner.userName"
+                    
+                },
+                avatar: {
+                    $first:"$owner.avatar"
                 }
             }
         },
@@ -773,6 +778,36 @@ const userFeed = asyncHandler(async (req, res) => {
 })
 
 const suggestFriends = asyncHandler(async (req, res) => {
+
+    const { page=1, limit=5 } = req.params;
+    const { _id } = req.user;
+    const pipeline = [];
+
+    const following = await Follow.find({
+        follower:_id
+    })
+
+    const followingUsernames = following.map((item) => item.user)
+
+    pipeline.push(
+        {
+            $match: {
+                _id:{$nin:followingUsernames}
+            }
+        },
+    )
+
+    const suggestAggregate = User.aggregate(pipeline);
+
+    const options = {
+        page: parseInt(page, 10),
+        limit:parseInt(limit,10)
+    }
+
+    const suggest = await User.aggregatePaginate(suggestAggregate, options);
+
+
+
     
     const users = await User.find({}).select("-refreshToken -password")
 
@@ -780,7 +815,7 @@ const suggestFriends = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                users,
+                suggest,
                 "All suggested user fetched successfully"
         )
     )
