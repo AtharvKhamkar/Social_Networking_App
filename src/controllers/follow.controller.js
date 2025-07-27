@@ -12,7 +12,15 @@ const followUser = asyncHandler(async (req, res) => {
     })
 
     if (checkFollowed) {
-        throw new ApiError(400,"You have already followed")
+        // throw new ApiError(400,"You have already followed")
+        return res.status(400)
+                .json(
+                    new ApiResponse(
+                        400,
+                        null,
+                        "You have already followed"
+                )
+            )
     }
 
     const addFollower = await Follow.create({

@@ -22,7 +22,15 @@ const generateAccessAndRefreshToken = async (userId) => {
         await user.save({ validateBeforeSave: false })
         return {accessToken,refreshToken}
     } catch (error) {
-        throw new ApiError(401,"Error while generating accessToken or refreshToken")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Error while generating accessToken or refreshToken"
+        )
+    )
+        
     }
 }
 
@@ -33,7 +41,16 @@ const registerUser = asyncHandler(async (req, res) => {
         [name, userName, email, password, bio].some((field) => 
             field?.trim() == "")
     ) {
-        throw new ApiError(400,"All fields are required")
+        // throw new ApiError(400,"All fields are required")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "All fields are required"
+        )
+    )
+        
     }
 
     const existedUser = await User.findOne({
@@ -41,7 +58,15 @@ const registerUser = asyncHandler(async (req, res) => {
     })
 
     if (existedUser) {
-        throw new ApiError(401,"user with email or username already exists")
+        // throw new ApiError(401,"user with email or username already exists")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "user with email or username already exists"
+        )
+    )
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -63,7 +88,15 @@ const registerUser = asyncHandler(async (req, res) => {
     const createdUser = await User.findById(user._id).select("-password")
 
     if (!createdUser) {
-        throw new ApiError(500,"Something went wrong while registering the user")
+        // throw new ApiError(500,"Something went wrong while registering the user")
+        return res.status(500)
+        .json(
+            new ApiResponse(
+                500,
+                null,
+                "Something went wrong while registering the user"
+        )
+    )
     }
 
     return res.status(200)
@@ -86,7 +119,16 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { email, userName, password } = req.body;
     if (!userName || !email) {
-        throw new ApiError(400,"Username or email is required for login")
+        // throw new ApiError(400,"Username or email is required for login")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Username or email is required for login"
+        )
+    )
+
     }
 
     const checkUser = await User.findOne({
@@ -94,12 +136,28 @@ const loginUser = asyncHandler(async (req, res) => {
     })
 
     if (!checkUser) {
-        throw new ApiError(401,"Please register first")
+        // throw new ApiError(401,"Please register first")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Please register first"
+        )
+    )
     }
 
     const isPasswordValid = await checkUser.isPasswordCorrect(password);
     if (!isPasswordValid) {
-        throw new ApiError(401,"Invalid password")
+        // throw new ApiError(401,"Invalid password")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Invalid password"
+        )
+    )
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(checkUser._id)
@@ -163,7 +221,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     console.log(incomingRefreshToken)
 
     if (!incomingRefreshToken) {
-        throw new ApiError(401,"Invalid refresh token")
+        // throw new ApiError(401,"Invalid refresh token")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Invalid refresh token"
+        )
+    )
     }
 
     const decodedRefreshToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
@@ -171,11 +237,27 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const user = await User.findById(decodedRefreshToken?._id)
 
     if (!user) {
-        throw new ApiError(401,"Invalid user")
+        // throw new ApiError(401,"Invalid user")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Invalid user"
+        )
+    )
     }
 
     if (incomingRefreshToken !== user?.refreshToken) {
-        throw new ApiError(401,"Invalid user")
+        // throw new ApiError(401,"Invalid user")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Invalid user"
+        )
+    )
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user?._id)
@@ -203,7 +285,15 @@ const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body
     const fetchedUser = await User.findOne({ email })
     if (!fetchedUser) {
-        throw new ApiError(400,"Invalid user")
+        // throw new ApiError(400,"Invalid user")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Invalid user"
+        )
+    )
     }
 
     console.log(fetchedUser)
@@ -248,7 +338,15 @@ const resetPassword = asyncHandler(async (req, res) => {
     })
 
     if (!fetchedUser) {
-        throw new ApiError(400,"Token expired,please try again later")
+        // throw new ApiError(400,"Token expired,please try again later")
+        return res.status(401)
+        .json(
+            new ApiResponse(
+                401,
+                null,
+                "Token expired,please try again later"
+        )
+    )
     }
     fetchedUser.password = newPassword
     fetchedUser.passwordResetToken = undefined

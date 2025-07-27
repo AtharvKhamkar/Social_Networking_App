@@ -35,7 +35,16 @@ const fetchComment = asyncHandler(async (req, res) => {
     })
 
     if (!fetchedComment) {
-        throw new ApiError(400,"Comment not found")
+        // throw new ApiError(400,"Comment not found")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Comment not found"
+        )
+    )
+        
     }
 
     return res.status(200)
@@ -55,7 +64,15 @@ const updateComment = asyncHandler(async (req, res) => {
     const existingComment = await Comment.findById(Id);
 
     if (!existingComment) {
-        throw new ApiError(400,"Comment not found")
+        // throw new ApiError(400,"Comment not found")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Comment not found"
+        )
+    )
     }
 
     const updatedComment = await Comment.findByIdAndUpdate(
@@ -88,7 +105,15 @@ const deleteComment = asyncHandler(async (req, res) => {
     });
 
     if (!isOwner) {
-        throw new ApiError(400,"Oly owner can delete comment")
+        // throw new ApiError(400,"Oly owner can delete comment")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Comment not found"
+        )
+    )
     }
 
     await Comment.findByIdAndDelete(Id)

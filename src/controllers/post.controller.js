@@ -53,7 +53,15 @@ const updatePost = asyncHandler(async (req, res) => {
 
     const checkPost = await Post.findById(Id);
     if (!checkPost) {
-        throw new ApiError(400, "Post not fount invalid Id")
+        // throw new ApiError(400, "Post not fount invalid Id")
+        return res.status(400)
+        .json(
+            new ApiResponse(
+                400,
+                null,
+                "Post not fount invalid Id"
+        )
+    )
     }
 
     if (contentLocalPath) {

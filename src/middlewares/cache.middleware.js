@@ -22,7 +22,15 @@ export const checkCache = (routeName) =>asyncHandler(async (req, res, next) => {
             next();
         }
     } catch (error) {
-        throw new ApiError(400,`${error} while caching value`)
+        // throw new ApiError(400,`${error} while caching value`)
+        return res.status(400)
+                .json(
+                    new ApiResponse(
+                        400,
+                        null,
+                        `${error} while caching value`
+                )
+            )
     }
 
 })
